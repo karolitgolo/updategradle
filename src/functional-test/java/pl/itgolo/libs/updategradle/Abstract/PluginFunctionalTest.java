@@ -1,4 +1,4 @@
-package pl.itgolo.libs.skeletongradle.Abstract;
+package pl.itgolo.libs.updategradle.Abstract;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
