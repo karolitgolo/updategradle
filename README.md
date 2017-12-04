@@ -44,10 +44,10 @@ libraries and other files requires to run my application.
 #### remoteDirApp
 Directory in FTP server contains files from directory ```dirReleaseUnpackAppFiles```
 
-## urlApp
+#### urlApp
 Address url for file contains in directory ```remoteDirApp```
 
-## forceUpload
+#### forceUpload
 
 - **true**: If current version application exist in server FTP,
 gradle throw error about exist version i server FTP
@@ -55,10 +55,21 @@ gradle throw error about exist version i server FTP
 - **false**: If current version application exist in server FTP,
 plugin force replace old files to new files this some version application.
 
+## How to work
+In gradle must tun task ```deployApp```. In remote FTP directory ```remoteDirApp```
+will be created ```upload.json``` file, contains newest version of my application,
+declared in ```gradle.properties``` file.
+
+In remote FTP directory ```remoteDirApp``` will be created directory ```files```
+contains directories with names of version. The directory with names of version,
+will be contains files of my application from ```dirReleaseUnpackAppFiles``` directory.
+
+In remote FTP directory ```remoteDirApp``` will be created file with structure files
+of current version, example ```1.0.0.0-structure.json```. The structure files will be
+contains structure files of my current version application with MD5 checksum of files of
+current version.
+
 ## Deploy plugin
-Always before deploy plugin gradle, it is make tests unit,
-integration and functional.
-
-
-
 - Deploy plugin ```gradle bintrayUpload```
+```bintrayUpload``` has depends on tests: unit, integration and functional.
+Always after upload plugin to bintray, gradle run tests.
