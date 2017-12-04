@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The type Greeting plugin test.
+ * The type Deploy app task test.
  */
 public class DeployAppTaskTest extends PluginFunctionalTest {
 
@@ -32,6 +32,9 @@ public class DeployAppTaskTest extends PluginFunctionalTest {
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
 
+    /**
+     * The Ftp service.
+     */
     FTPService ftpService;
     /**
      * The App dir.
@@ -39,12 +42,6 @@ public class DeployAppTaskTest extends PluginFunctionalTest {
     File appDir;
 
 
-    /**
-     * Sets .
-     *
-     * @throws IOException        the io exception
-     * @throws URISyntaxException the uri syntax exception
-     */
     @Before
     @Override
     public void setup() throws IOException, URISyntaxException {
@@ -62,6 +59,11 @@ public class DeployAppTaskTest extends PluginFunctionalTest {
         Files.write(Paths.get(myRes2Txt.getCanonicalPath()), ("content file 2" + Calendar.getInstance().toString()).getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Extension greeting plugin with property in build gradle file.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void extensionGreetingPluginWithPropertyInBuildGradleFile() throws Exception {
         String remoteDirTest = env.getProperty("TEST_REMOTE_DIR_APP") + "/tests/functional/deployAppTask";
@@ -83,6 +85,11 @@ public class DeployAppTaskTest extends PluginFunctionalTest {
         Assert.assertTrue(result2.getOutput().contains("SUCCESS DEPLOY"));
     }
 
+    /**
+     * Send application with this some version.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     public void sendApplicationWithThisSomeVersion() throws IOException {
         String remoteDirTest = env.getProperty("TEST_REMOTE_DIR_APP") + "/tests/functional/deployAppTask";

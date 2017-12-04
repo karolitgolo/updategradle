@@ -7,18 +7,29 @@ application, algorithm check new version of application and make
 it update.
 
 ## Include plugin to your project
-- In build script add repository:
+- In begin ```build.gradle``` add:
 
 ```
-maven {
-    url "http://dl.bintray.com/itgolo/libs"
+buildscript {
+    repositories {
+        maven {
+            url "http://dl.bintray.com/itgolo/libs"
+        }
     }
+    dependencies {
+        classpath 'pl.itgolo.libs:updategradle:1.+'
+    }
+}
+
+apply plugin: 'pl.itgolo.libs.updategradle' version '${updateGradleVersion}'
 ````
 
-- Apply plugin in ```build.gradle```:
+- or by DSL Plugin
 
 ```
-apply plugin: 'pl.itgolo.libs.updategradle.UploadPlugin'
+plugins {
+    id 'pl.itgolo.libs.updategradle'
+}
 ```
 
 - Configuration plugin in ```build.gradle```:
@@ -27,6 +38,7 @@ apply plugin: 'pl.itgolo.libs.updategradle.UploadPlugin'
 UpdatePlugin {
     dirReleaseUnpackAppFiles = 'C:\\MyProject\\Build\\Relese'
     remoteDirApp = '/public_html/myApp'
+    newVersion = '1.0.0.0'
     ftpHost = 'ftp.host'
     ftpUser = 'user'
     ftpPassword = 'password'
@@ -43,6 +55,9 @@ libraries and other files requires to run my application.
 
 #### remoteDirApp
 Directory in FTP server contains files from directory ```dirReleaseUnpackAppFiles```
+
+#### newVersion
+New version of my application to upload.
 
 #### urlApp
 Address url for file contains in directory ```remoteDirApp```
@@ -69,7 +84,25 @@ of current version, example ```1.0.0.0-structure.json```. The structure files wi
 contains structure files of my current version application with MD5 checksum of files of
 current version.
 
+## Deploy application to FTP
+If your all files of application exist in directory ```dirReleaseUnpackAppFiles```
+run ```deployApp```
+
+For one click deploy application can use ```publishNewVersionApp```
+for tests task and generate file your application.
+
 ## Deploy plugin
-- Deploy plugin ```gradle bintrayUpload```
-```bintrayUpload``` has depends on tests: unit, integration and functional.
+
+#### Deploy plugin to ```Bintray``` by ```gradle publishPluginBintray```
+```publishPluginBintray``` has depends on tests: unit, integration and functional.
 Always after upload plugin to bintray, gradle run tests.
+
+#### Or deploy plugin to ```jCenter``` by ```gradle publishPluginJCenter```
+```publishPluginJCenter``` has depends on tests: unit, integration and functional.
+Always after upload plugin to jCenter, gradle run tests.
+
+You must add two authorization properties to file ```gradle.properties```
+example in ```$HOME/.gradle/gradle.properties``` file.
+
+Guide for new account in jCenter in this link:
+https://guides.gradle.org/publishing-plugins-to-gradle-plugin-portal

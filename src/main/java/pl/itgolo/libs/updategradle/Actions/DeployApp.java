@@ -1,6 +1,7 @@
 package pl.itgolo.libs.updategradle.Actions;
 
 import org.apache.commons.net.ftp.FTP;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import pl.itgolo.libs.updategradle.Services.FTPService;
 
@@ -57,6 +58,11 @@ public class DeployApp {
     FTPService ftpService;
 
     /**
+     * The Temp dir.
+     */
+    File tempDir;
+
+    /**
      * Instantiates a new Deploy app.
      *
      * @param dirReleaseUnpackAppFiles the dir release unpack app files
@@ -82,6 +88,7 @@ public class DeployApp {
         ftpService = new FTPService(ftpHost, ftpPort, ftpUser, ftpPassword, true, FTP.BINARY_FILE_TYPE);
         this.remoteDirApp = remoteDirApp;
         this.validateUpdate = validateUpdate;
+        tempDir = Files.createTempDirectory("upload").toFile();
     }
 
     /**
@@ -147,11 +154,11 @@ public class DeployApp {
 
     private void validateHasThisSomeVersion() throws IOException {
         String updateJsonUrlFile = String.format("%1$s/update.json", urlApp);
-        RemoteNewVersion remoteNewVersion = new RemoteNewVersion(updateJsonUrlFile, remoteNewVersionTimeout);
+       RemoteNewVersion remoteNewVersion = new RemoteNewVersion(updateJsonUrlFile, remoteNewVersionTimeout);
         String remoteVersionString = remoteNewVersion.getVersion();
-        if (remoteVersionString != null) {
-            DefaultArtifactVersion remoteVersion = new DefaultArtifactVersion(remoteVersionString);
-            DefaultArtifactVersion newVersion = new DefaultArtifactVersion(this.newVersion);
+       if (remoteVersionString != null) {
+            ArtifactVersion remoteVersion = new DefaultArtifactVersion(remoteVersionString);
+            ArtifactVersion newVersion = new DefaultArtifactVersion(this.newVersion);
             if ((newVersion.compareTo(remoteVersion) < 0 || newVersion.compareTo(remoteVersion) == 0) && !forceUpload) {
                 throw new IOException("New version is less or equal from remote version. Try set `forceUpdate` to true.");
             }
@@ -160,7 +167,7 @@ public class DeployApp {
 
     private File buildUpdateJsonFile() throws IOException {
         String json = "{\"version\": \"" + newVersion + "\"}";
-        File updateJson = new File("app/temp/updategradle/update.json");
+        File updateJson = new File(tempDir,"update.json");
         Files.createDirectories(Paths.get(updateJson.getParent()));
         Files.write(Paths.get(updateJson.getCanonicalPath()), json.getBytes(StandardCharsets.UTF_8));
         return updateJson;
