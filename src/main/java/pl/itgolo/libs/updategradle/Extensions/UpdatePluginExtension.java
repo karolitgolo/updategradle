@@ -11,7 +11,7 @@ public class UpdatePluginExtension {
     /**
      * The Url app.
      */
-    public String urlApp = "http://apps.itgolo.pl/test/updategradle";
+    public String urlApp = "http://apps.itgolo.pl/updategradle";
     /**
      * The Remote new version timeout.
      */
@@ -44,4 +44,9 @@ public class UpdatePluginExtension {
      * The Ftp password.
      */
     public String ftpPassword = "";
+
+    /**
+     * The Validate update.
+     */
+    public Boolean validateUpdate = true;
 }

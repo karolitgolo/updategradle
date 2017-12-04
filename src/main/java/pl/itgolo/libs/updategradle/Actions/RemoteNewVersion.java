@@ -47,6 +47,7 @@ public class RemoteNewVersion {
      *
      * @return the version
      */
+    @SuppressWarnings("unchecked")
     public String getVersion() {
         String json = getJson();
         if (json == null){
@@ -57,6 +58,7 @@ public class RemoteNewVersion {
         map = (Map<String, String>) gson.fromJson(json, map.getClass());
         return map.get("version");
     }
+
 
     private String getJson() {
         StringBuilder sb = new StringBuilder();

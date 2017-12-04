@@ -25,6 +25,10 @@ testSets {
     functionalTest { dirName = 'functional-test' }
 }
 
+test.outputs.upToDateWhen {false}
+integrationTest.outputs.upToDateWhen {false}
+functionalTest.outputs.upToDateWhen {false}
+
 dependencies {
     compile group: 'commons-net', name: 'commons-net', version: '3.6'
     compile group: 'org.apache.maven', name: 'maven-artifact', version: '3.5.2'
@@ -39,6 +43,19 @@ gradlePlugin {
         "${projectArtifact}Plugin" {
             id = pluginId
             implementationClass = pluginClass
+        }
+    }
+}
+
+sourceSets {
+    functionalTest {
+        java {
+            srcDir 'src/main/java'
+        }
+   }
+   integrationTest {
+        java {
+            srcDir 'src/main/java'
         }
     }
 }
@@ -83,12 +100,16 @@ publishing {
             version projectVersion
         }
     }
+    repositories {
+        mavenLocal()
+    }
 }
-functionalTest.dependsOn clean
-bintrayUpload.dependsOn test
-bintrayUpload.dependsOn integrationTest
-bintrayUpload.dependsOn functionalTest
-functionalTest.mustRunAfter integrationTest
-integrationTest.mustRunAfter test
-test.mustRunAfter clean
 
+bintrayUpload.dependsOn test
+
+test.dependsOn clean
+test.dependsOn functionalTest
+test.dependsOn integrationTest
+
+test.mustRunAfter clean
+functionalTest.mustRunAfter integrationTest

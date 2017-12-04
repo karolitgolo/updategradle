@@ -1,9 +1,22 @@
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
     }
     dependencies {
         classpath '{{projectGroup}}:{{projectArtifact}}:{{projectVersion}}'
     }
 }
+
 apply plugin: '{{pluginId}}'
+
+UpdatePlugin {
+    dirReleaseUnpackAppFiles = '{{dirReleaseUnpackAppFiles}}'
+    remoteDirApp = '{{TEST_REMOTE_DIR_APP}}'
+    ftpHost = '{{TEST_FTP_HOST}}'
+    ftpUser = '{{TEST_FTP_USER}}'
+    ftpPassword = '{{TEST_FTP_PASSWORD}}'
+    urlApp = '{{urlApp}}'
+    forceUpload = '{{forceUpload}}'
+}
+

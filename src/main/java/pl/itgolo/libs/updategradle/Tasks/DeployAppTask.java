@@ -21,21 +21,23 @@ public class DeployAppTask extends DefaultTask {
     /**
      * Action.
      *
-     * @throws IOException the io exception
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
      */
     @TaskAction
-    void action() throws IOException {
+    void action() throws IOException, InterruptedException {
         DeployApp deployApp = new DeployApp(
                 updatePluginExtension.dirReleaseUnpackAppFiles,
                 updatePluginExtension.urlApp,
                 updatePluginExtension.newVersion,
                 updatePluginExtension.remoteNewVersionTimeout,
-                updatePluginExtension.forceUpload,
+                new Boolean(updatePluginExtension.forceUpload),
                 updatePluginExtension.remoteDirApp,
                 updatePluginExtension.ftpHost,
                 updatePluginExtension.ftpPort,
                 updatePluginExtension.ftpUser,
-                updatePluginExtension.ftpPassword
+                updatePluginExtension.ftpPassword,
+                updatePluginExtension.validateUpdate
         );
         deployApp.deploy();
         System.out.println("Deployed app files: " + new File(updatePluginExtension.dirReleaseUnpackAppFiles).getCanonicalPath());

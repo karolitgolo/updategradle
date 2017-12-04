@@ -1,6 +1,7 @@
 package pl.itgolo.libs.updategradle.Services;
 
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -156,6 +157,31 @@ public class FTPService {
         }
     }
 
+    /**
+     * Delete.
+     *
+     * @param remoteDir the remote dir
+     * @throws IOException the io exception
+     */
+    public void delete(String remoteDir) throws IOException {
+            FTPFile[] files=this.ftpClient.listFiles(remoteDir);
+            if(files.length>0) {
+                for (FTPFile ftpFile : files) {
+                    if(ftpFile.isDirectory()){
+                        if (!ftpFile.getName().equals(".") && !ftpFile.getName().equals("..")){
+                            delete(remoteDir + "/" + ftpFile.getName());
+                        }
+                    }
+                    else {
+                        System.out.println("Delete remote file: " + remoteDir + "/" + ftpFile.getName());
+                        this.ftpClient.deleteFile(remoteDir + "/" + ftpFile.getName());
+                    }
+
+                }
+            }
+            System.out.println("Delete remote directory: " + remoteDir);
+            this.ftpClient.removeDirectory(remoteDir);
+    }
 
     private String getCorrectRemoteDir(String remotePath, File file) {
         if (file.isFile()) {

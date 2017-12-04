@@ -1,15 +1,17 @@
 package pl.itgolo.libs.updategradle.Actions;
 
 import com.google.gson.Gson;
-import org.gradle.internal.impldep.org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,9 +80,9 @@ public class GeneratorStructure {
         for (Path path : paths) {
             File file = path.toFile();
             String relativePath = file.getCanonicalPath().replace(dirApp.getCanonicalPath(), "");
-            if (relativePath.length()>0){
+            if (relativePath.length() > 0) {
                 relativePath = relativePath.replaceAll("\\\\", "/");
-                if (relativePath.startsWith("/")){
+                if (relativePath.startsWith("/")) {
                     relativePath = relativePath.substring(1);
                 }
                 relativePaths.put(relativePath, getMd5File(file));
@@ -90,8 +92,17 @@ public class GeneratorStructure {
     }
 
     private String getMd5File(File file) throws IOException {
-        if (file.isFile()){
-            return DigestUtils.md5Hex(new FileInputStream(file));
+        if (file.isFile()) {
+            MessageDigest md;
+            try {
+                InputStream is = Files.newInputStream(file.toPath());
+                md = MessageDigest.getInstance("MD5");
+                DigestInputStream dis = new DigestInputStream(is, md);
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+            byte[] digest = md.digest();
+            return new String(digest, Charset.forName("UTF-8"));
         }
         return "";
     }

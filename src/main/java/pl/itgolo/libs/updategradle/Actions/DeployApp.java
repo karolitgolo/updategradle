@@ -42,6 +42,11 @@ public class DeployApp {
      * The Remote dir app.
      */
     String remoteDirApp;
+
+    /**
+     * The Validate update.
+     */
+    Boolean validateUpdate;
     /**
      * The Generator structure.
      */
@@ -64,9 +69,10 @@ public class DeployApp {
      * @param ftpPort                  the ftp port
      * @param ftpUser                  the ftp user
      * @param ftpPassword              the ftp password
+     * @param validateUpdate           the validate update
      * @throws IOException the io exception
      */
-    public DeployApp(String dirReleaseUnpackAppFiles, String urlApp, String newVersion, Integer remoteNewVersionTimeout, Boolean forceUpload, String remoteDirApp, String ftpHost, Integer ftpPort, String ftpUser, String ftpPassword) throws IOException {
+    public DeployApp(String dirReleaseUnpackAppFiles, String urlApp, String newVersion, Integer remoteNewVersionTimeout, Boolean forceUpload, String remoteDirApp, String ftpHost, Integer ftpPort, String ftpUser, String ftpPassword, Boolean validateUpdate) throws IOException {
         this.newVersion = newVersion;
         this.urlApp = urlApp;
         this.remoteNewVersionTimeout = remoteNewVersionTimeout;
@@ -75,15 +81,16 @@ public class DeployApp {
         this.generatorStructure = new GeneratorStructure(dirReleaseUnpackAppFiles);
         ftpService = new FTPService(ftpHost, ftpPort, ftpUser, ftpPassword, true, FTP.BINARY_FILE_TYPE);
         this.remoteDirApp = remoteDirApp;
-
+        this.validateUpdate = validateUpdate;
     }
 
     /**
      * Deploy.
      *
-     * @throws IOException the io exception
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
      */
-    public void deploy() throws IOException {
+    public void deploy() throws IOException, InterruptedException {
         validateHasThisSomeVersion();
         sendFilesToFtp();
         File structureJsonFile = buildStructure();
@@ -91,9 +98,10 @@ public class DeployApp {
         ftpService.upload(structureJsonFile, String.format("%1$s/files/%2$s-structure.json", this.remoteDirApp, this.newVersion));
         ftpService.upload(updateJsonFile, String.format("%1$s/update.json", this.remoteDirApp));
         ftpService.closeFtpClient();
+        System.out.println("SUCCESS DEPLOY");
     }
 
-    private void sendFilesToFtp() throws IOException {
+    private void sendFilesToFtp() throws IOException, InterruptedException {
         Map<String, String> relativePaths = this.generatorStructure.toMap();
         for (Map.Entry<String, String> entry : relativePaths.entrySet()) {
             String remotePathRelative = entry.getKey();
@@ -104,13 +112,11 @@ public class DeployApp {
         }
     }
 
-    private void validateUpload(File file, String remotePathRelative) throws IOException {
-        if (file.isFile()) {
+    private void validateUpload(File file, String remotePathRelative) throws IOException, InterruptedException {
+        if (file.isFile() && this.validateUpdate) {
             String urlFile = String.format("%1$s/files/%2$s/%3$s", this.urlApp, this.newVersion, remotePathRelative);
             URL url = new URL(urlFile);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("HEAD");
-            conn.getInputStream();
+            HttpURLConnection conn = buildHttpUrlConnection(url);
             Long weightRemote = conn.getContentLengthLong();
             Long weight = file.length();
             if (!weight.equals(weightRemote)) {
@@ -118,6 +124,25 @@ public class DeployApp {
             }
             conn.disconnect();
         }
+    }
+
+    private HttpURLConnection buildHttpUrlConnection(URL url) throws IOException, InterruptedException {
+        Integer limitAttempts = 120;
+        for (Integer i = 0; i<=limitAttempts ; i++){
+            try {
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("HEAD");
+                conn.getInputStream();
+                return conn;
+            } catch (Exception e) {
+                if (i.equals(limitAttempts)) {
+                    throw new IOException(e);
+                }
+                System.out.println(String.format("Wait %1$s of 120 seconds for react server for validate upload file by %2$s", i+2, url.toString()));
+                Thread.sleep(1000);
+            }
+        }
+        throw new IOException("Can not connect to http url");
     }
 
     private void validateHasThisSomeVersion() throws IOException {
