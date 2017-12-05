@@ -1,6 +1,7 @@
 package pl.itgolo.libs.updategradle.Actions;
 
 import com.google.gson.Gson;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import java.io.BufferedReader;
@@ -37,8 +38,11 @@ public class RemoteNewVersion {
      * @return the boolean
      */
     public Boolean hasNewVersion(String versionToCompare){
-        DefaultArtifactVersion remoteVersion = new DefaultArtifactVersion(getVersion());
-        DefaultArtifactVersion appVersion = new DefaultArtifactVersion(versionToCompare);
+        if (getVersion() ==null){
+            return false;
+        }
+        ArtifactVersion remoteVersion = new DefaultArtifactVersion(getVersion());
+        ArtifactVersion appVersion = new DefaultArtifactVersion(versionToCompare);
         return appVersion.compareTo(remoteVersion) < 0;
     }
 
@@ -49,7 +53,7 @@ public class RemoteNewVersion {
      */
     @SuppressWarnings("unchecked")
     public String getVersion() {
-        String json = getJson();
+        String json = getJson(updateJsonUrlFile, remoteNewVersionTimeout);
         if (json == null){
             return null;
         }
@@ -60,13 +64,20 @@ public class RemoteNewVersion {
     }
 
 
-    private String getJson() {
+    /**
+     * Gets json.
+     *
+     * @param urlFileRemote the url file remote
+     * @param timeout       the timeout
+     * @return the json
+     */
+    public static String getJson(String urlFileRemote, Integer timeout) {
         StringBuilder sb = new StringBuilder();
         try {
-            URL url = new URL(updateJsonUrlFile);
+            URL url = new URL(urlFileRemote);
             URLConnection urlConn = url.openConnection();
             if (urlConn != null)
-                urlConn.setReadTimeout(this.remoteNewVersionTimeout * 1000);
+                urlConn.setReadTimeout(timeout * 1000);
             if (urlConn != null && urlConn.getInputStream() != null) {
                 InputStreamReader in = new InputStreamReader(urlConn.getInputStream(), Charset.forName("UTF-8"));
                 BufferedReader bufferedReader = new BufferedReader(in);

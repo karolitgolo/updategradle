@@ -24,7 +24,7 @@ public class GeneratorStructureTask extends DefaultTask {
      * @throws IOException the io exception
      */
     @TaskAction
-    void action() throws IOException {
+    void action() throws IOException, InterruptedException {
         GeneratorStructure generatorStructure = new GeneratorStructure(updatePluginExtension.dirReleaseUnpackAppFiles);
         File structureJsonFile = generatorStructure.toFile();
         System.out.println("Generated structure JSON file: " + structureJsonFile.getCanonicalPath());

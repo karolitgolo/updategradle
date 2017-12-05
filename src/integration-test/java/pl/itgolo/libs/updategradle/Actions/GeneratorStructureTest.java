@@ -50,7 +50,7 @@ public class GeneratorStructureTest {
      * @throws IOException the io exception
      */
     @Test
-    public void getRelativePathsFromAppDirectory() throws IOException {
+    public void getRelativePathsFromAppDirectory() throws IOException, InterruptedException {
         GeneratorStructure generatorStructure = new GeneratorStructure(appDir.getCanonicalPath());
         File structureJsonFile = generatorStructure.toFile();
     }

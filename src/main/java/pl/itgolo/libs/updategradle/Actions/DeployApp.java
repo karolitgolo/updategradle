@@ -173,7 +173,7 @@ public class DeployApp {
         return updateJson;
     }
 
-    private File buildStructure() throws IOException {
+    private File buildStructure() throws IOException, InterruptedException {
         return this.generatorStructure.toFile();
     }
 }

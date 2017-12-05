@@ -1,10 +1,14 @@
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+
 plugins {
     id 'org.unbroken-dome.test-sets' version '1.4.2'
     id 'com.gradle.plugin-publish' version '0.9.7'
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.7.3'
-    id 'pl.itgolo.libs.updategradle' version '1.0.0.0n'
+    id 'pl.itgolo.libs.updategradle' version '1.0.0.0o'
 }
 
 apply from: 'gradle/extend.gradle'
@@ -28,3 +32,37 @@ dependencies {
 }
 
 apply from: 'gradle/update.gradle'
+
+task externalCreateJarFile(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'External app',
+                'Implementation-Version': '1.0.0.0',
+                'Main-Class': 'pl.itgolo.libs.updategradle.Examples.ExternalApp',
+                'Class-Path': configurations.runtime.files.collect { "app/libs/$it.name" }.join(' ')
+    }
+    baseName = 'externalApp'
+    archiveName = "externalApp.jar"
+    with jar
+}
+
+task copyCompileLibsExternal(type: Copy) {
+    into "$buildDir/output/externalApp/app/libs"
+    from configurations.requireRunJar
+}
+
+task copyAppFilesExternal() {
+    doLast {
+        copy {
+            from "$buildDir/libs"
+            into "$buildDir/output/externalApp"
+            include "**/externalApp.jar"
+        }
+        File testTxt = new File("$buildDir/output/externalApp", "test.txt")
+        Files.write(Paths.get(testTxt.getCanonicalPath()), ("content file" + Calendar.getInstance().toString()).getBytes(StandardCharsets.UTF_8));
+    }
+}
+
+task publishAppExternal(dependsOn: ['copyCompileLibsExternal', 'externalCreateJarFile', 'copyAppFilesExternal']){
+    externalCreateJarFile.mustRunAfter copyCompileLibsExternal
+    copyAppFilesExternal.mustRunAfter externalCreateJarFile
+}

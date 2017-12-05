@@ -27,6 +27,7 @@ public class GeneratorStructure {
      * The Dir release unpack app files.
      */
     String dirReleaseUnpackAppFiles;
+    private Integer timeoutWaitClose;
 
     /**
      * Instantiates a new Generator structure.
@@ -43,9 +44,10 @@ public class GeneratorStructure {
      * To json string.
      *
      * @return the string
-     * @throws IOException the io exception
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
      */
-    public String toJson() throws IOException {
+    public String toJson() throws IOException, InterruptedException {
         Map<String, String> relativePaths = toMap();
         return new Gson().toJson(relativePaths);
     }
@@ -54,9 +56,10 @@ public class GeneratorStructure {
      * To file file.
      *
      * @return the file
-     * @throws IOException the io exception
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
      */
-    public File toFile() throws IOException {
+    public File toFile() throws IOException, InterruptedException {
         String json = toJson();
         File structureJson = new File(tempDir, "structure.json");
         Files.createDirectories(Paths.get(structureJson.getParent()));
@@ -68,9 +71,10 @@ public class GeneratorStructure {
      * To map map.
      *
      * @return the map
-     * @throws IOException the io exception
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
      */
-    public Map<String, String> toMap() throws IOException {
+    public Map<String, String> toMap() throws IOException, InterruptedException {
         File dirApp = new File(this.dirReleaseUnpackAppFiles);
         if (!dirApp.exists()) {
             throw new IOException("Dir with release unpack app files not found: " + this.dirReleaseUnpackAppFiles);
@@ -82,6 +86,7 @@ public class GeneratorStructure {
         List<Path> paths = Files.walk(Paths.get(dirApp.getCanonicalPath())).collect(Collectors.toList());
         for (Path path : paths) {
             File file = path.toFile();
+            validateFileIsWritable(file);
             String relativePath = file.getCanonicalPath().replace(dirApp.getCanonicalPath(), "");
             if (relativePath.length() > 0) {
                 relativePath = relativePath.replaceAll("\\\\", "/");
@@ -94,6 +99,20 @@ public class GeneratorStructure {
         return relativePaths;
     }
 
+    private void validateFileIsWritable(File file) throws InterruptedException, IOException {
+        if (!file.exists() || timeoutWaitClose == null){
+            return;
+        }
+        for(int i = 0 ; i<timeoutWaitClose ; i++){
+            if (Files.isWritable(file.toPath())){
+                return;
+            }
+            System.out.println(String.format("Wait for writable file, second: " + i));
+            Thread.sleep(1000);
+        }
+        throw new IOException(String.format("File is not writable after %1$s seconds: %2$s", timeoutWaitClose, file.getCanonicalPath()));
+    }
+
     /**
      * Gets md 5 file.
      *
@@ -101,7 +120,7 @@ public class GeneratorStructure {
      * @return the md 5 file
      * @throws IOException the io exception
      */
-    public String getMd5File(File file) throws IOException {
+    public static String getMd5File(File file) throws IOException {
         if (file.isFile()) {
             MessageDigest md;
             try {
@@ -116,4 +135,12 @@ public class GeneratorStructure {
         return "";
     }
 
+    /**
+     * Sets timeout wait close.
+     *
+     * @param timeoutWaitClose the timeout wait close
+     */
+    public void setTimeoutWaitClose(int timeoutWaitClose) {
+        this.timeoutWaitClose = timeoutWaitClose;
+    }
 }

@@ -70,7 +70,7 @@ gradle throw error about exist version i server FTP
 - **false**: If current version application exist in server FTP,
 plugin force replace old files to new files this some version application.
 
-## How to work
+## How work upload new version application
 In gradle must tun task ```deployApp```. In remote FTP directory ```remoteDirApp```
 will be created ```upload.json``` file, contains newest version of my application,
 declared in ```gradle.properties``` file.
@@ -91,7 +91,69 @@ run ```deployApp```
 For one click deploy application can use ```publishNewVersionApp```
 for tests task and generate file your application.
 
-## Deploy plugin
+## Integration with external application
+
+Must be plugin deployed to FTP, for begin integrate with external application.
+For integrate with external application, publish update plugin
+in maven repository, example by ```bintrayUpload```.
+
+Import plugin update to project. In ```build.gradle``` add dependency and repository.
+
+```
+repositories {
+    maven {
+        url "http://dl.bintray.com/itgolo/libs"
+    }
+}
+dependencies {
+    compile 'pl.itgolo.libs:updategradle:1.0.0.0f'
+}
+```
+
+In external application add code for run update plugin:
+
+```
+URL urlDirUpdatePlugin = new URL("http://host/updategradle");
+File appDir = new File(".");
+String appCurrentVersion = "1.0.0.0";
+String urlDirApp = "http://host/myapp";
+String commandReturnAfterUpdated = "C:\\app\\myApp.exe --args";
+Boolean silent = true;
+String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+
+LaunchUpdateApp launchUpdateApp = new LaunchUpdateApp(
+        urlDirUpdatePlugin, appDir, appCurrentVersion,
+        urlDirApp, commandReturnAfterUpdated, silent, pid);
+launchUpdateApp.launch();
+```
+
+For launch update, close external application example:
+
+```
+System.exit(0);
+```
+
+Update plugin be waiting for closed application external.
+
+After update external application, update plugin run external
+application with argument ```--updated```. If application external
+was updated, then argument equal ```true``` or ```false``` for otherwise.
+
+Can be set timeout waiting close external application by:
+
+```
+launchUpdateApp.setTimeoutWaitClose(120);
+```
+
+For debug mode add:
+
+```
+launchUpdateApp.setDebug(true);
+```
+
+All logs contains in ```app/update/logs``` directory of application
+
+## Deploy plugin (for dev of this plugin)
 
 #### Deploy plugin to ```Bintray``` by ```gradle publishPluginBintray```
 ```publishPluginBintray``` has depends on tests: unit, integration and functional.
