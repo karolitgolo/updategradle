@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import pl.itgolo.libs.updategradle.Services.LogService;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class GeneratorStructureTest {
 
         Files.write(Paths.get(myAppExe.getCanonicalPath()), "content file".getBytes(StandardCharsets.UTF_8));
         Files.write(Paths.get(myResTxt.getCanonicalPath()), "content file".getBytes(StandardCharsets.UTF_8));
+        LogService.setAppDir(appDir);
     }
 
     /**

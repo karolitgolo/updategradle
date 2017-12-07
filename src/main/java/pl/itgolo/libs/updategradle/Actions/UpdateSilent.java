@@ -32,14 +32,14 @@ public class UpdateSilent {
      */
     public Boolean update() throws IOException, InterruptedException {
         File appDir = new File(argsService.getValueArg("--appDir"));
-        LogService.log("UpdateSilent with arg --appDir: "+ argsService.getValueArg("--appDir"));
-        LogService.log("UpdateSilent with arg --remoteUrl: "+ argsService.getValueArg("--remoteUrl"));
+        LogService.log("Arg --appDir: "+ argsService.getValueArg("--appDir"));
+        LogService.log("Arg --remoteUrl: "+ argsService.getValueArg("--remoteUrl"));
         DownloadVersion downloadVersion = new DownloadVersion(appDir, new URL(argsService.getValueArg("--remoteUrl")));
         if (argsService.hasArg("--timeoutWaitClose")){
-            LogService.log("UpdateSilent with arg --timeoutWaitClose: "+ argsService.getValueArg("--timeoutWaitClose"));
+            LogService.log("Arg --timeoutWaitClose: "+ argsService.getValueArg("--timeoutWaitClose"));
             downloadVersion.setTimeoutWaitClose(Integer.parseInt(argsService.getValueArg("--timeoutWaitClose")));
         } else {
-            LogService.log("UpdateSilent without arg --timeoutWaitClose");
+            LogService.log("Without arg --timeoutWaitClose");
         }
         return downloadVersion.downloadNewVersion(argsService.getValueArg("--versionToCompare"));
     }

@@ -22,6 +22,7 @@ public class LaunchUpdateApp {
     private Boolean silent;
     private String pid;
 
+    private String appTitle;
     /**
      * The Url app update.
      */
@@ -33,6 +34,7 @@ public class LaunchUpdateApp {
     /**
      * Instantiates a new Launch update app.
      *
+     * @param appTitle             the app title
      * @param urlAppUpdate         the url app update
      * @param mainDirApp           the main dir app
      * @param versionToCompare     the version to compare
@@ -41,7 +43,8 @@ public class LaunchUpdateApp {
      * @param silent               the silent
      * @param pid                  the pid
      */
-    public LaunchUpdateApp(URL urlAppUpdate, File mainDirApp, String versionToCompare, String urlApp, String commandReturnMainApp, Boolean silent, String pid) {
+    public LaunchUpdateApp(String appTitle, URL urlAppUpdate, File mainDirApp, String versionToCompare, String urlApp, String commandReturnMainApp, Boolean silent, String pid) {
+        this.appTitle = appTitle;
         this.urlAppUpdate = urlAppUpdate;
         this.mainDirApp = mainDirApp;
         this.versionToCompare = versionToCompare;
@@ -92,13 +95,14 @@ public class LaunchUpdateApp {
     private String buildCommandRunUpdateApp() throws IOException {
         String pathUpdateApp = new File(mainDirApp.getCanonicalPath() + "/app/update/updategradle.jar").getCanonicalPath();
         String command = String.format("java -jar %1$s --versionToCompare=%2$s --appDir=%3$s " +
-                        "--remoteUrl=%4$s --commandReturnMainApp=%5$s --timeoutWaitClose=%6$s",
+                        "--remoteUrl=%4$s --commandReturnMainApp=%5$s --timeoutWaitClose=%6$s --appTitle=%7$s",
                 pathUpdateApp,
                 versionToCompare,
                 "\"" + mainDirApp.getCanonicalPath() + "\"",
                 urlApp,
                  "\"" + commandReturnMainApp.replaceAll("\"", "\\\\\"") + "\"",
-                timeoutWaitClose);
+                timeoutWaitClose,
+                appTitle);
         if (silent){
             command += " --silent";
         }
@@ -137,6 +141,11 @@ public class LaunchUpdateApp {
         this.timeoutWaitClose = timeoutWaitClose;
     }
 
+    /**
+     * Sets debug.
+     *
+     * @param debug the debug
+     */
     public void setDebug(Boolean debug) {
         this.debug = debug;
     }

@@ -113,6 +113,7 @@ dependencies {
 In external application add code for run update plugin:
 
 ```
+String appTitle = "TitleApp"
 URL urlDirUpdatePlugin = new URL("http://host/updategradle");
 File appDir = new File(".");
 String appCurrentVersion = "1.0.0.0";
@@ -122,7 +123,7 @@ Boolean silent = true;
 String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 
 LaunchUpdateApp launchUpdateApp = new LaunchUpdateApp(
-        urlDirUpdatePlugin, appDir, appCurrentVersion,
+        appTitle, urlDirUpdatePlugin, appDir, appCurrentVersion,
         urlDirApp, commandReturnAfterUpdated, silent, pid);
 launchUpdateApp.launch();
 ```
@@ -152,6 +153,15 @@ launchUpdateApp.setDebug(true);
 ```
 
 All logs contains in ```app/update/logs``` directory of application
+
+####
+Arguments for run jar update plugin:
+
+```
+--silent, --versionToCompare=1.0.0.0 --appDir=C:\appDir
+--remoteUrl=http://host/appDir --timeoutWaitClose=120 --pid=12345
+--commandReturnMainApp="java -jar C:\appDir\myApp.jar --arg"
+```
 
 ## Deploy plugin (for dev of this plugin)
 

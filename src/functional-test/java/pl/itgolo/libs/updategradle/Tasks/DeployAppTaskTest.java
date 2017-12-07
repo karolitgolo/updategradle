@@ -75,11 +75,11 @@ public class DeployAppTaskTest extends PluginFunctionalTest {
         templateProps.put("urlApp", env.getProperty("TEST_URL_APP") + "/functional/deployAppTask");
         templateProps.put("forceUpload", "true");
         BuildResult result = createGradleRunner("src/functional-test/resources/pl/itgolo/libs/updategradle/templateBuild.gradle", templateProps)
-                .withArguments("deployApp", "--stacktrace","--refresh-dependencies")
+                .withArguments("deployApp", "--stacktrace")
                 .withDebug(true)
                 .build();
         BuildResult result2 = createGradleRunner("src/functional-test/resources/pl/itgolo/libs/updategradle/templateBuild.gradle", templateProps)
-                .withArguments("deployApp", "--stacktrace","--refresh-dependencies")
+                .withArguments("deployApp", "--stacktrace")
                 .withDebug(true)
                 .build();
         Assert.assertTrue(result2.getOutput().contains("SUCCESS DEPLOY"));
@@ -101,16 +101,18 @@ public class DeployAppTaskTest extends PluginFunctionalTest {
         templateProps.put("urlApp", env.getProperty("TEST_URL_APP") + "/functional/deployAppTask");
         templateProps.put("forceUpload", "false");
         BuildResult result = createGradleRunner("src/functional-test/resources/pl/itgolo/libs/updategradle/templateBuild.gradle", templateProps)
-                .withArguments("deployApp", "--stacktrace","--refresh-dependencies")
+                .withArguments("deployApp", "--stacktrace")
                 .withDebug(true)
                 .build();
         try {
             createGradleRunner("src/functional-test/resources/pl/itgolo/libs/updategradle/templateBuild.gradle", templateProps)
-                    .withArguments("deployApp", "--stacktrace","--refresh-dependencies")
+                    .withArguments("deployApp", "--stacktrace")
                     .withDebug(true)
                     .build();
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("New version is less or equal from remote version"));
         }
     }
+
+
 }

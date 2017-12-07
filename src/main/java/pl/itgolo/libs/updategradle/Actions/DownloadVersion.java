@@ -1,6 +1,8 @@
 package pl.itgolo.libs.updategradle.Actions;
 
 import com.google.gson.Gson;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
 import pl.itgolo.libs.updategradle.Services.LogService;
 
 import java.io.BufferedInputStream;
@@ -20,6 +22,12 @@ import java.util.Map;
  */
 public class DownloadVersion {
 
+   public static SimpleStringProperty oldVersionProperty = new SimpleStringProperty("");
+    public static  SimpleStringProperty newVersionProperty = new SimpleStringProperty("");
+    public static  SimpleStringProperty relativeFilePathProperty = new SimpleStringProperty("");
+    public static SimpleDoubleProperty progressFileProperty = new SimpleDoubleProperty(0.0);
+    public static  SimpleDoubleProperty progressAllProperty = new SimpleDoubleProperty(0.0);
+
     /**
      * The Dir app.
      */
@@ -29,7 +37,6 @@ public class DownloadVersion {
      * The Url app.
      */
     URL urlApp;
-
 
     /**
      * The Version.
@@ -61,11 +68,13 @@ public class DownloadVersion {
     public Boolean downloadNewVersion(String versionToCompare) throws IOException, InterruptedException {
         RemoteNewVersion remoteNewVersion = new RemoteNewVersion(this.urlApp.toString() + "/update.json", 25);
         if (remoteNewVersion.hasNewVersion(versionToCompare)){
+            LogService.log("Version to compare ExternalApp: " + versionToCompare);
+            oldVersionProperty.set(versionToCompare);
             String newVersion = remoteNewVersion.getVersion();
-            LogService.log("DownloadVersion newVersion: " + newVersion);
+            LogService.log("Detect newVersion ExternalApp: " + newVersion);
             return download(newVersion);
         } else {
-            LogService.log("DownloadVersion has not new version versionToCompare: " + versionToCompare);
+            LogService.log("Has not new version versionToCompare: " + versionToCompare);
         }
         return false;
     }
@@ -81,39 +90,53 @@ public class DownloadVersion {
     public Boolean download(String version) throws IOException, InterruptedException {
         this.version = version;
         if (existVersion()){
-            LogService.log("DownloadVersion exist structure: " + version);
+            newVersionProperty.set(version);
+            LogService.log("Exist remote structure externalApp: " + version);
             Map<String, String> structureRemote = buildStructureRemote();
-            LogService.log("DownloadVersion build remote structure");
+            LogService.log("Build remote structure externalApp");
             Map<String, String> structure = buildStructure();
-            LogService.log("DownloadVersion build structure");
+            LogService.log("Build structure externalApp");
             updateFiles(structure, structureRemote);
-            LogService.log("DownloadVersion Updated files");
+            LogService.log("Downloaded new files of externalApp");
             return true;
         } else {
-            LogService.log("DownloadVersion not exist structure: " + version);
+            LogService.log("Not exist remote structure externalApp: " + version);
         }
         return false;
     }
 
-    private void updateFiles(Map<String, String> structure, Map<String, String> structureRemote) throws IOException {
+    private void updateFiles(Map<String, String> structure, Map<String, String> structureRemote) throws IOException, InterruptedException {
+        int allFiles = structureRemote.size();
+        int count = 0;
         for (Map.Entry<String, String> entry : structureRemote.entrySet()) {
+            count++;
+            setProgressProperty(progressAllProperty, allFiles, count);
             String relativeFileRemote = entry.getKey();
             String md5Remote = entry.getValue();
             if (isDirectoryRemote(md5Remote)){
                 Files.createDirectories(Paths.get(dirApp.getCanonicalPath() + "/" + relativeFileRemote));
             } else if (isFileRemote(md5Remote)) {
                 if (mustUpdateFile(structure, relativeFileRemote, md5Remote)){
+                    relativeFilePathProperty.set(relativeFileRemote);
+                    LogService.log("Download new version file: " + relativeFileRemote);
                     downloadFile(relativeFileRemote);
                 }
             }
         }
     }
 
-    private void downloadFile(String relativeFileRemote) throws IOException {
-       // LogService.log("DownloadVersion downloadFile relativeFileRemote: " + relativeFileRemote);
+    private void setProgressProperty(SimpleDoubleProperty doubleProperty, int fileWeight, final double count) throws InterruptedException {
+        Long nowProgress = Math.round((count / fileWeight)* 100.0);
+        if (!nowProgress.equals(progressFileProperty.get())) {
+            doubleProperty.set(new Double(nowProgress/100.0));
+        }
+    }
+
+    private void downloadFile(String relativeFileRemote) throws IOException, InterruptedException {
         String urlFileRemote = urlApp.toString() + String.format("/files/%1$s/%2$s", version, relativeFileRemote);
         File file = new File(dirApp, relativeFileRemote);
         Files.createDirectories(Paths.get(file.getParent()));
+        Integer fileWeight = getFileWeightRemote(urlFileRemote).intValue();
         BufferedInputStream in = null;
         FileOutputStream fout = null;
         try {
@@ -121,8 +144,11 @@ public class DownloadVersion {
             fout = new FileOutputStream(file);
             final byte data[] = new byte[1024];
             int count;
+            double countBytes = 0.0;
             while ((count = in.read(data, 0, 1024)) != -1) {
                 fout.write(data, 0, count);
+                countBytes +=count;
+                setProgressProperty(progressFileProperty,fileWeight, countBytes);
             }
         } catch (Exception e) {
             throw new IOException(e);
@@ -138,7 +164,14 @@ public class DownloadVersion {
 
 
 
+    private Long getFileWeightRemote(String urlFileRemote) throws IOException, InterruptedException {
+        URL url = new URL(urlFileRemote);
+        HttpURLConnection conn = DeployApp.buildHttpUrlConnection(url);
+        return conn.getContentLengthLong();
+    }
+
     private Boolean mustUpdateFile(Map<String, String> structure, String relativeFileRemote, String md5Remote) {
+        LogService.log("Check new version file: " + relativeFileRemote);
         for (Map.Entry<String, String> entry : structure.entrySet()) {
             String relativeFile = entry.getKey();
             String md5 = entry.getValue();

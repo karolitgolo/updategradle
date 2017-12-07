@@ -3,16 +3,15 @@ package pl.itgolo.libs.updategradle.Examples;
 import pl.itgolo.libs.updategradle.Actions.LaunchUpdateApp;
 import pl.itgolo.libs.updategradle.Services.ArgsService;
 import pl.itgolo.libs.updategradle.Services.LogService;
+import pl.itgolo.libs.updategradle.Services.ProcessService;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Calendar;
-import java.util.Map;
 
 /**
  * IDE Editor: IntelliJ IDEA
@@ -35,42 +34,38 @@ public class ExternalApp {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         ArgsService argsService = new ArgsService(args);
-        if (argsService.hasArg("--debug")){
-            LogService.setEnable(true);
-            LogService.setAppDir(new File(argsService.getValueArg("--appDir")));
-        }
-        LogService.log("Run externalApp.jar");
-        LogService.log("Run externalApp.jar exist --update: " + argsService.hasArg("--update"));
-        for (Map.Entry<String, Object> entry : argsService.toMap().entrySet()) {
-            LogService.log("Run externalApp.jar arg: " + entry.getKey() + ", val: " + entry.getValue());
-        }
-        if (!argsService.hasArg("--update")) {
-            LogService.log("External app without --update argument");
-            File saveFile = new File(argsService.getValueArg("--appDir") + "/saveFile.txt");
-            Files.write(Paths.get(saveFile.getCanonicalPath()), ("content file" + Calendar.getInstance().toString()).getBytes(StandardCharsets.UTF_8));
-        } else {
+        LogService.launch(argsService.hasArg("--debug"), new File(argsService.getValueArg("--appDir")));
+        if (argsService.hasArg("--test")) {
+            LogService.log("Launched externalApp.jar with mode test");
+            LogService.log("Running updategradle.jar with mode test");
             URL urlDirUpdatePlugin = new URL(argsService.getValueArg("--urlDirUpdatePlugin"));
+            LogService.log("Running updategradle.jar with arg --appDir" + argsService.getValueArg("--appDir"));
             File appDir = new File(argsService.getValueArg("--appDir"));
             String appCurrentVersion = "1.0.0.0";
             String urlDirApp = argsService.getValueArg("--urlDirApp");
             String commandReturnAfterUpdated = argsService.getValueArg("--commandReturnAfterUpdated");
-            Boolean silent = true;
-            LogService.log("External app --update urlDirUpdatePlugin: " + urlDirUpdatePlugin);
-            LogService.log("External app --update urlDirUpdatePlugin: " + urlDirUpdatePlugin);
-            LogService.log("External app --update urlDirApp: " + urlDirApp);
-            LogService.log("External app --update commandReturnAfterUpdated: " + commandReturnAfterUpdated);
-            LogService.log("External app --update appDir: " + appDir);
-            String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-            LaunchUpdateApp launchUpdateApp = new LaunchUpdateApp(
+            Boolean silent =argsService.hasArg("--silent");
+            String pid = ProcessService.getPid();
+            String appTitle = argsService.getValueArg("--appTitle");
+            LogService.log("Running updategradle.jar with arg --appTitle: " + appTitle);
+            LaunchUpdateApp launchUpdateApp = new LaunchUpdateApp(appTitle,
                     urlDirUpdatePlugin, appDir, appCurrentVersion,
                     urlDirApp, commandReturnAfterUpdated, silent, pid);
             launchUpdateApp.setTimeoutWaitClose(120);
             launchUpdateApp.setDebug(argsService.hasArg("--debug"));
+            launchUpdateApp.setTest(argsService.hasArg("--test"));
             launchUpdateApp.launch();
-            LogService.log("External app with --update argument simulate close application with 10 seconds");
-            Thread.sleep(10000);
-            LogService.log("External app STOP simulate");
+            LogService.log("Called launch updategradle.jar with mode test");
+            LogService.log("Wait for close externalApp.jar with mode test");
+            Thread.sleep(6000);
+            LogService.log("Closed externalApp.jar with mode test");
             System.exit(0);
+        } else {
+            LogService.log("Launched externalApp.jar without mode test");
+            LogService.log("Create saveFile.txt file in ExternalApp directory");
+            File saveFile = new File(argsService.getValueArg("--appDir") + "/saveFile.txt");
+            Files.write(Paths.get(saveFile.getCanonicalPath()), ("content file" + Calendar.getInstance().toString()).getBytes(StandardCharsets.UTF_8));
+            LogService.log("SUCCESS ASYNC TEST");
         }
 
     }

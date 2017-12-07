@@ -7,6 +7,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import pl.itgolo.libs.updategradle.Services.FTPService;
+import pl.itgolo.libs.updategradle.Services.LogService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,6 +73,7 @@ public class DownloadUpdateAppTest {
         Files.write(Paths.get(myAppExe.getCanonicalPath()), ("content file" + Calendar.getInstance().toString()).getBytes(StandardCharsets.UTF_8));
         Files.write(Paths.get(myResTxt.getCanonicalPath()), "content file".getBytes(StandardCharsets.UTF_8));
         Files.write(Paths.get(myRes2Txt.getCanonicalPath()), ("content file 2" + Calendar.getInstance().toString()).getBytes(StandardCharsets.UTF_8));
+        LogService.setAppDir(appDir);
     }
 
     /**

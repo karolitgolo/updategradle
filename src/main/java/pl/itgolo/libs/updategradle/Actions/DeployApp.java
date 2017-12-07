@@ -133,7 +133,7 @@ public class DeployApp {
         }
     }
 
-    private HttpURLConnection buildHttpUrlConnection(URL url) throws IOException, InterruptedException {
+    public static HttpURLConnection buildHttpUrlConnection(URL url) throws IOException, InterruptedException {
         Integer limitAttempts = 120;
         for (Integer i = 0; i<=limitAttempts ; i++){
             try {
