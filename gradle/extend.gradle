@@ -101,5 +101,5 @@ task publishPluginBintray(dependsOn: ['clean', 'test', 'integrationTest', 'funct
     test.mustRunAfter clean
     integrationTest.mustRunAfter test
     functionalTest.mustRunAfter integrationTest
-    publishPlugins.mustRunAfter functionalTest
+    bintrayUpload.mustRunAfter functionalTest
 }

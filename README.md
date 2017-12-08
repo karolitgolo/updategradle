@@ -154,6 +154,18 @@ launchUpdateApp.setDebug(true);
 
 All logs contains in ```app/update/logs``` directory of application
 
+For detect new version external application in remote server, use in your
+application:
+
+```
+String updateJsonRemote = "http://host/appDir/update.json";
+String currentOldVersion = "1.0.0.0";
+RemoteNewVersion remoteNewVersion = new RemoteNewVersion(updateJsonRemote, 25);
+if (remoteNewVersion.hasNewVersion(currentOldVersion)){
+    // launch update app
+}
+```
+
 ####
 Arguments for run jar update plugin:
 
